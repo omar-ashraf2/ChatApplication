@@ -1,7 +1,7 @@
 export interface Message {
   id: number;
-  content: string | { [key: string]: unknown }[];
-  type: "text" | "image" | "file" | "table";
+  content: string;
+  type: string;
   sender: string;
   timestamp: Date;
 }
