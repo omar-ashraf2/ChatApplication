@@ -1,11 +1,12 @@
-import { useState } from "react";
-import { Message } from "../types/messageTypes";
 import { AttachFile, Send } from "@mui/icons-material";
-import { FilePond, registerPlugin } from "react-filepond";
-import "filepond/dist/filepond.min.css";
+import { FilePondFile } from "filepond";
 import FilePondPluginImagePreview from "filepond-plugin-image-preview";
 import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
-import { FilePondFile } from "filepond";
+import "filepond/dist/filepond.min.css";
+import Papa from "papaparse";
+import { useState } from "react";
+import { FilePond, registerPlugin } from "react-filepond";
+import { Message } from "../types/messageTypes";
 
 registerPlugin(FilePondPluginImagePreview);
 
@@ -18,14 +19,34 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({ sendMessage }) => {
   const [files, setFiles] = useState<Blob[]>([]);
   const [pondInstance, setPondInstance] = useState<FilePond | null>(null);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (input || files.length > 0) {
+      let content = input;
+
+      if (files.length > 0) {
+        const file = files[0];
+
+        if (file.type === "application/json") {
+          const fileContent = await file.text();
+          content = JSON.stringify(JSON.parse(fileContent), null, 2);
+        } else if (file.type === "text/csv") {
+          const fileContent = await file.text();
+          const parsedCSV = Papa.parse(fileContent, { header: true });
+          content = JSON.stringify(parsedCSV.data);
+        } else {
+          content = URL.createObjectURL(file);
+        }
+      }
+
       const newMessage: Message = {
         id: Date.now(),
-        content: input || URL.createObjectURL(files[0]),
+        content,
         type:
           files.length > 0
-            ? files[0].type.startsWith("image/")
+            ? files[0].type === "application/json" ||
+              files[0].type === "text/csv"
+              ? "table"
+              : files[0].type.startsWith("image/")
               ? "image"
               : "file"
             : "text",
@@ -69,7 +90,7 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({ sendMessage }) => {
             allowMultiple={false}
             onupdatefiles={handleFileUpload}
             onremovefile={handleFileRemove}
-            acceptedFileTypes={["image/*", "application/json"]}
+            acceptedFileTypes={["image/*", "application/json", "text/csv"]}
             labelIdle='Drag & Drop your file or <span class="filepond--label-action">Browse</span>'
             className="custom-filepond"
           />

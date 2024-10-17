@@ -1,0 +1,37 @@
+[
+  {
+    "name": "Alice",
+    "age": 28,
+    "position": "Software Engineer",
+    "location": "New York",
+    "salary": 95000
+  },
+  {
+    "name": "Bob",
+    "age": 32,
+    "position": "Product Manager",
+    "location": "San Francisco",
+    "salary": 120000
+  },
+  {
+    "name": "Charlie",
+    "age": 26,
+    "position": "Designer",
+    "location": "Chicago",
+    "salary": 70000
+  },
+  {
+    "name": "David",
+    "age": 35,
+    "position": "DevOps Engineer",
+    "location": "Austin",
+    "salary": 105000
+  },
+  {
+    "name": "Eva",
+    "age": 30,
+    "position": "Data Scientist",
+    "location": "Seattle",
+    "salary": 115000
+  }
+]
