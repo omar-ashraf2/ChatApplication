@@ -1,84 +1,70 @@
-import React, { useMemo } from "react";
 import {
-  useTable,
-  useSortBy,
-  ColumnInstance,
-  HeaderGroup,
-  Row,
-} from "react-table";
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableSortLabel,
+} from "@mui/material";
+import { useMemo, useState } from "react";
 
 interface DataTableProps {
   data: Array<{ [key: string]: unknown }>;
 }
 
 const DataTable: React.FC<DataTableProps> = ({ data }) => {
-  const columns = useMemo(
-    () =>
-      Object.keys(data[0] || {}).map((key) => ({
-        Header: key.toUpperCase(),
-        accessor: key,
-      })),
-    [data]
-  );
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [orderBy, setOrderBy] = useState<string | null>(null);
 
-  const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
-    useTable(
-      {
-        columns,
-        data,
-      },
-      useSortBy
-    );
+  const handleSort = (property: string) => {
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(property);
+  };
+
+  const sortedData = useMemo(() => {
+    if (!orderBy) return data;
+    return [...data].sort((a, b) => {
+      const aValue = a[orderBy] as string | number;
+      const bValue = b[orderBy] as string | number;
+
+      if (aValue < bValue) return order === "asc" ? -1 : 1;
+      if (aValue > bValue) return order === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [data, order, orderBy]);
 
   return (
-    <table
-      {...getTableProps()}
-      className="min-w-full bg-gray-100 border-collapse border"
-    >
-      <thead>
-        {headerGroups.map(
-          (headerGroup: HeaderGroup<{ [key: string]: unknown }>) => (
-            <tr {...headerGroup.getHeaderGroupProps()} key={headerGroup.id}>
-              {headerGroup.headers.map(
-                (column: ColumnInstance<{ [key: string]: unknown }>) => (
-                  <th
-                    // @ts-expect-error - Temporarily ignoring TypeScript errors for sorting props
-                    {...column.getHeaderProps(column.getSortByToggleProps())}
-                    key={column.id}
-                    className="p-2 border text-left cursor-pointer"
-                  >
-                    {column.render("Header")}
-                    <span>
-                      {/* @ts-expect-error - Temporarily ignoring TypeScript errors for sorting props */}
-                      {column.isSorted
-                        ? // @ts-expect-error - Temporarily ignoring TypeScript errors for sorting props
-                          column.isSortedDesc
-                          ? " 🔽"
-                          : " 🔼"
-                        : ""}
-                    </span>
-                  </th>
-                )
-              )}
-            </tr>
-          )
-        )}
-      </thead>
-      <tbody {...getTableBodyProps()}>
-        {rows.map((row: Row<{ [key: string]: unknown }>) => {
-          prepareRow(row);
-          return (
-            <tr {...row.getRowProps()} key={row.id}>
-              {row.cells.map((cell) => (
-                <td {...cell.getCellProps()} key={cell.column.id}>
-                  {cell.render("Cell")}
-                </td>
+    <TableContainer component={Paper}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            {Object.keys(data[0] || {}).map((key) => (
+              <TableCell key={key}>
+                <TableSortLabel
+                  active={orderBy === key}
+                  direction={orderBy === key ? order : "asc"}
+                  onClick={() => handleSort(key)}
+                >
+                  {key.toUpperCase()}
+                </TableSortLabel>
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {sortedData.map((row, index) => (
+            <TableRow key={index}>
+              {Object.values(row).map((value, i) => (
+                <TableCell key={i}>{value as string | number}</TableCell>
               ))}
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 };
 

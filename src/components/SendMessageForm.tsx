@@ -7,20 +7,36 @@ interface SendMessageFormProps {
 
 const SendMessageForm: React.FC<SendMessageFormProps> = ({ sendMessage }) => {
   const [input, setInput] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const handleSendMessage = () => {
-    if (input) {
+    if (input || file) {
       const newMessage: Message = {
         id: Date.now(),
-        content: input,
-        type: "text",
-        sender: "User",
+        content: input || URL.createObjectURL(file!),
+        type: file
+          ? file.type.startsWith("image/")
+            ? "image"
+            : "file"
+          : "text",
+        sender: "You",
         timestamp: new Date(),
       };
 
       sendMessage(newMessage);
       setInput("");
+      setFile(null);
+      setImagePreview(null);
     }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile && selectedFile.type.startsWith("image/")) {
+      setImagePreview(URL.createObjectURL(selectedFile));
+    }
+    setFile(selectedFile || null);
   };
 
   return (
@@ -33,8 +49,28 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({ sendMessage }) => {
         value={input}
         onChange={(e) => setInput(e.target.value)}
       />
+      <input
+        type="file"
+        className="p-2 hidden"
+        id="file-upload"
+        onChange={handleFileChange}
+      />
+      {imagePreview && (
+        <img
+          src={imagePreview}
+          alt="Preview"
+          className="h-16 w-16 object-cover"
+        />
+      )}
+      <label
+        htmlFor="file-upload"
+        className="p-2 bg-blue-500 text-white rounded-md cursor-pointer"
+        aria-label="Upload file"
+      >
+        Upload
+      </label>
       <button
-        className="p-2 bg-blue-500 text-white rounded-md"
+        className="p-2 bg-green-500 text-white rounded-md"
         onClick={handleSendMessage}
         aria-label="Send message"
       >

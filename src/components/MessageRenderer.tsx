@@ -1,13 +1,13 @@
 import { motion } from "framer-motion";
-import DataTableMessage from "./DataTableMessage";
 import { Message } from "../types/messageTypes";
+import DataTableMessage from "./DataTableMessage";
 
 interface MessageProps {
   message: Message;
 }
 
 const MessageRenderer: React.FC<MessageProps> = ({ message }) => {
-  const { content, type } = message;
+  const { content, type, sender } = message;
   const animationProps = {
     initial: { opacity: 0, y: -10 },
     animate: { opacity: 1, y: 0 },
@@ -17,20 +17,22 @@ const MessageRenderer: React.FC<MessageProps> = ({ message }) => {
 
   return (
     <motion.div {...animationProps} className="mb-4">
-      {type === "text" && <p>{content as string}</p>}
-
+      <strong>{sender}</strong> 
+      {type === "text" && <p>{content}</p>}
       {type === "image" && (
         <img
           className="max-w-xs cursor-pointer"
-          src={content as string}
+          src={content}
           alt="message"
-          onClick={() => window.open(content as string, "_blank")}
+          onClick={() => window.open(content, "_blank")}
         />
       )}
-
-      {type === "table" && Array.isArray(content) && (
-        <DataTableMessage data={content as { [key: string]: unknown }[]} />
+      {type === "file" && (
+        <a href={content} download className="text-blue-600 underline">
+          Download file
+        </a>
       )}
+      {type === "table" && <DataTableMessage data={JSON.parse(content)} />}
     </motion.div>
   );
 };
