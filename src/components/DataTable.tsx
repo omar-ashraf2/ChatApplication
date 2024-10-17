@@ -7,6 +7,7 @@ import {
   TableHead,
   TableRow,
   TableSortLabel,
+  TextField,
 } from "@mui/material";
 import { useMemo, useState } from "react";
 
@@ -17,6 +18,7 @@ interface DataTableProps {
 const DataTable: React.FC<DataTableProps> = ({ data }) => {
   const [order, setOrder] = useState<"asc" | "desc">("asc");
   const [orderBy, setOrderBy] = useState<string | null>(null);
+  const [filters, setFilters] = useState<{ [key: string]: string }>({});
 
   const handleSort = (property: string) => {
     const isAsc = orderBy === property && order === "asc";
@@ -24,9 +26,28 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
     setOrderBy(property);
   };
 
+  const handleFilterChange = (property: string, value: string) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      [property]: value,
+    }));
+  };
+
+  const filteredData = useMemo(() => {
+    return data.filter((row) =>
+      Object.keys(filters).every((key) => {
+        const value = row[key] as string | number;
+        return value
+          .toString()
+          .toLowerCase()
+          .includes(filters[key].toLowerCase());
+      })
+    );
+  }, [data, filters]);
+
   const sortedData = useMemo(() => {
-    if (!orderBy) return data;
-    return [...data].sort((a, b) => {
+    if (!orderBy) return filteredData;
+    return [...filteredData].sort((a, b) => {
       const aValue = a[orderBy] as string | number;
       const bValue = b[orderBy] as string | number;
 
@@ -34,7 +55,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
       if (aValue > bValue) return order === "asc" ? 1 : -1;
       return 0;
     });
-  }, [data, order, orderBy]);
+  }, [filteredData, order, orderBy]);
 
   return (
     <TableContainer component={Paper}>
@@ -50,6 +71,12 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
                 >
                   {key.toUpperCase()}
                 </TableSortLabel>
+                <TextField
+                  value={filters[key] || ""}
+                  onChange={(e) => handleFilterChange(key, e.target.value)}
+                  placeholder={`Filter by ${key}`}
+                  size="small"
+                />
               </TableCell>
             ))}
           </TableRow>

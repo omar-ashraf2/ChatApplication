@@ -23,7 +23,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    await pusher.trigger("my-channel", "my-event", message);
+    const channelName = `chat-${message.sender}`;
+    await pusher.trigger(channelName, "my-event", message);
 
     res.status(200).json({ success: true, message });
   } catch (error) {

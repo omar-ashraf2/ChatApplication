@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Modal } from "@mui/material";
 import { Message } from "../types/messageTypes";
 
 interface SendMessageFormProps {
@@ -9,6 +10,7 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({ sendMessage }) => {
   const [input, setInput] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
 
   const handleSendMessage = () => {
     if (input || file) {
@@ -39,6 +41,12 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({ sendMessage }) => {
     setFile(selectedFile || null);
   };
 
+  const handleRemoveImage = () => {
+    setFile(null);
+    setImagePreview(null);
+    setOpen(false);
+  };
+
   return (
     <div className="p-4 bg-white shadow-md flex items-center space-x-4">
       <input
@@ -55,13 +63,24 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({ sendMessage }) => {
         id="file-upload"
         onChange={handleFileChange}
       />
+
       {imagePreview && (
-        <img
-          src={imagePreview}
-          alt="Preview"
-          className="h-16 w-16 object-cover"
-        />
+        <>
+          <img
+            src={imagePreview}
+            alt="Preview"
+            className="h-16 w-16 object-cover cursor-pointer"
+            onClick={() => setOpen(true)}
+          />
+          <button
+            className="p-2 bg-red-500 text-white rounded-md"
+            onClick={handleRemoveImage}
+          >
+            Remove Image
+          </button>
+        </>
       )}
+
       <label
         htmlFor="file-upload"
         className="p-2 bg-blue-500 text-white rounded-md cursor-pointer"
@@ -76,6 +95,22 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({ sendMessage }) => {
       >
         Send
       </button>
+
+      <Modal open={open} onClose={() => setOpen(false)}>
+        <div className="relative flex items-center justify-center h-screen">
+          <button
+            onClick={() => setOpen(false)}
+            className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center bg-white p-2 rounded-full shadow-lg cursor-pointer"
+          >
+            X
+          </button>
+          <img
+            src={imagePreview!}
+            alt="Preview"
+            className="max-w-full max-h-full object-cover"
+          />
+        </div>
+      </Modal>
     </div>
   );
 };
