@@ -1,8 +1,9 @@
+import { CloudDownload } from "@mui/icons-material";
+import { Modal } from "@mui/material";
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { Message } from "../types/messageTypes";
 import DataTable from "./DataTable";
-import { useState } from "react";
-import { Modal } from "@mui/material";
 
 interface MessageProps {
   message: Message;
@@ -62,9 +63,15 @@ const MessageRenderer: React.FC<MessageProps> = ({ message }) => {
           </>
         )}
         {type === "file" && (
-          <a href={content} download className="text-blue-600 underline">
-            Download file
-          </a>
+          <div>
+            <a
+              href={content}
+              download
+              className="flex gap-2 items-center rounded-md w-fit p-3 shadow-md text-blue-600 font-medium"
+            >
+              <CloudDownload /> Download File
+            </a>
+          </div>
         )}
         {type === "table" && <DataTable data={JSON.parse(content)} />}
       </div>

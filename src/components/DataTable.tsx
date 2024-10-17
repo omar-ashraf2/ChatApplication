@@ -8,7 +8,9 @@ import {
   TableRow,
   TableSortLabel,
   TextField,
+  InputAdornment,
 } from "@mui/material";
+import { Search } from "@mui/icons-material";
 import { useMemo, useState } from "react";
 
 interface DataTableProps {
@@ -58,34 +60,54 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
   }, [filteredData, order, orderBy]);
 
   return (
-    <TableContainer component={Paper}>
+    <TableContainer component={Paper} className="shadow-md rounded-lg">
       <Table>
         <TableHead>
           <TableRow>
             {Object.keys(data[0] || {}).map((key) => (
-              <TableCell key={key}>
-                <TableSortLabel
-                  active={orderBy === key}
-                  direction={orderBy === key ? order : "asc"}
-                  onClick={() => handleSort(key)}
-                >
-                  {key.toUpperCase()}
-                </TableSortLabel>
-                <TextField
-                  value={filters[key] || ""}
-                  onChange={(e) => handleFilterChange(key, e.target.value)}
-                  placeholder={`Filter by ${key}`}
-                  size="small"
-                />
+              <TableCell key={key} className="bg-gray-100">
+                <div className="flex justify-between items-center">
+                  <TableSortLabel
+                    active={orderBy === key}
+                    direction={orderBy === key ? order : "asc"}
+                    onClick={() => handleSort(key)}
+                  >
+                    <span className="font-semibold text-gray-600">
+                      {key.toUpperCase()}
+                    </span>
+                  </TableSortLabel>
+                  <TextField
+                    value={filters[key] || ""}
+                    onChange={(e) => handleFilterChange(key, e.target.value)}
+                    placeholder={`Search`}
+                    size="small"
+                    variant="outlined"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Search fontSize="small" />
+                        </InputAdornment>
+                      ),
+                      style: { borderRadius: 8 },
+                    }}
+                    className="ml-2"
+                  />
+                </div>
               </TableCell>
             ))}
           </TableRow>
         </TableHead>
         <TableBody>
           {sortedData.map((row, index) => (
-            <TableRow key={index}>
+            <TableRow
+              key={index}
+              hover
+              className="hover:bg-gray-50 transition duration-200 ease-in-out"
+            >
               {Object.values(row).map((value, i) => (
-                <TableCell key={i}>{value as string | number}</TableCell>
+                <TableCell key={i} className="text-gray-700 p-4">
+                  {value as string | number}
+                </TableCell>
               ))}
             </TableRow>
           ))}
