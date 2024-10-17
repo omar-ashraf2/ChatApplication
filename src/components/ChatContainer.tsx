@@ -32,7 +32,7 @@ const ChatContainer: React.FC = () => {
   return (
     <div className="flex flex-col md:flex-row h-screen">
       <UserList setActiveUser={setActiveUser} activeUser={activeUser} />
-      <div className="flex-1 w-full flex flex-col h-full">
+      <div className="flex-1 w-3/4 flex flex-col h-full">
         <MessageList messages={chats[activeUser] || []} />
         <SendMessageForm sendMessage={handleSendMessage} />
       </div>
