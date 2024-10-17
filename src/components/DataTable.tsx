@@ -77,7 +77,7 @@ const DataTable: React.FC<DataTableProps> = ({ data }) => {
                 <TableCell
                   key={key}
                   className="bg-gray-100 text-nowrap"
-                  sx={{ p: 1 }}
+                  sx={{ paddingInline: "16px", paddingBlock: "8px" }}
                 >
                   <TableSortLabel
                     active={orderBy === key}
