@@ -1,40 +1,60 @@
-import { useEffect, useState } from "react";
 import Pusher from "pusher-js";
+import { useEffect, useRef, useState } from "react";
 import { Message } from "../types/messageTypes";
 
-export const usePusher = (channelName: string) => {
+const usePusher = (channelName: string, username: string) => {
   const [messages, setMessages] = useState<Message[]>([]);
+  const pusherRef = useRef<Pusher | null>(null);
 
   useEffect(() => {
-    const pusher = new Pusher("2243c5b753a52d843878", {
-      cluster: "eu",
-    });
+    Pusher.logToConsole = true;
 
-    const channel = pusher.subscribe(channelName);
+    if (!pusherRef.current) {
+      const pusher = new Pusher("2243c5b753a52d843878", {
+        cluster: "eu",
+        forceTLS: true,
+      });
 
-    channel.bind("my-event", function (data: Message) {
-      setMessages((prevMessages) => [...prevMessages, data]);
-    });
+      const channel = pusher.subscribe(channelName);
+
+      channel.bind("message", (data: Message) => {
+        setMessages((prev) => {
+          if (!prev.some((msg) => msg.id === data.id)) {
+            return [...prev, data];
+          }
+          return prev;
+        });
+      });
+
+      pusherRef.current = pusher;
+    }
 
     return () => {
-      channel.unbind_all();
-      channel.unsubscribe();
+      if (pusherRef.current) {
+        pusherRef.current.unsubscribe(channelName);
+        pusherRef.current.disconnect();
+        pusherRef.current = null;
+      }
     };
   }, [channelName]);
 
-  const sendMessage = async (message: Message) => {
+  const sendMessage = async (content: string | Blob[], type: string) => {
+    const message: Message = {
+      id: Date.now(),
+      content,
+      type,
+      sender: username,
+      timestamp: new Date().toISOString(),
+    };
+
     try {
-      const response = await fetch("/api/send-message", {
+      await fetch("/api/send-message", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: message }),
+        body: JSON.stringify({ message, channel: channelName }),
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to send message");
-      }
     } catch (error) {
       console.error("Error sending message:", error);
     }
@@ -42,3 +62,5 @@ export const usePusher = (channelName: string) => {
 
   return { messages, sendMessage };
 };
+
+export default usePusher;

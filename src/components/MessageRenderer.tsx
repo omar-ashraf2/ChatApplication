@@ -19,7 +19,7 @@ const MessageRenderer: React.FC<MessageProps> = ({ message }) => {
   return (
     <motion.div {...animationProps} className="mb-4 flex items-start space-x-3">
       <img
-        src={"https://randomuser.me/api/portraits/men/1.jpg"}
+        src={`https://api.dicebear.com/5.x/adventurer/svg?seed=${sender}`}
         alt={sender}
         className="h-10 w-10 rounded-full"
       />
@@ -48,11 +48,7 @@ const MessageRenderer: React.FC<MessageProps> = ({ message }) => {
               </a>
             </div>
           )}
-          {type === "table" && (
-            <div className="mt-2">
-              <DataTable data={JSON.parse(content)} />
-            </div>
-          )}
+          {type === "table" && <DataTable data={JSON.parse(content)} />}
         </div>
       </div>
     </motion.div>

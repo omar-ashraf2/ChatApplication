@@ -7,10 +7,14 @@ interface MessageListProps {
 
 const MessageList: React.FC<MessageListProps> = ({ messages }) => {
   return (
-    <div className="flex-grow p-4 overflow-y-auto bg-gray-50">
-      {messages.map((message) => (
-        <MessageRenderer key={message.id} message={message} />
-      ))}
+    <div className="flex-grow p-4 overflow-auto bg-gray-50">
+      {messages.length > 0 ? (
+        messages.map((message) => (
+          <MessageRenderer key={message.id} message={message} />
+        ))
+      ) : (
+        <p>No messages yet</p>
+      )}
     </div>
   );
 };

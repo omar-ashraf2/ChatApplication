@@ -6,12 +6,10 @@ import "filepond/dist/filepond.min.css";
 import Papa from "papaparse";
 import { useState } from "react";
 import { FilePond, registerPlugin } from "react-filepond";
-import { Message } from "../types/messageTypes";
-
 registerPlugin(FilePondPluginImagePreview);
 
 interface SendMessageFormProps {
-  sendMessage: (message: Message) => void;
+  sendMessage: (content: string | Blob[], type: string) => void;
 }
 
 const SendMessageForm: React.FC<SendMessageFormProps> = ({ sendMessage }) => {
@@ -37,24 +35,15 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({ sendMessage }) => {
           content = URL.createObjectURL(file);
         }
       }
-
-      const newMessage: Message = {
-        id: Date.now(),
-        content,
-        type:
-          files.length > 0
-            ? files[0].type === "application/json" ||
-              files[0].type === "text/csv"
-              ? "table"
-              : files[0].type.startsWith("image/")
-              ? "image"
-              : "file"
-            : "text",
-        sender: "You",
-        timestamp: new Date(),
-      };
-
-      sendMessage(newMessage);
+      const type =
+        files.length > 0
+          ? files[0].type === "application/json" || files[0].type === "text/csv"
+            ? "table"
+            : files[0].type.startsWith("image/")
+            ? "image"
+            : "file"
+          : "text";
+      sendMessage(content, type);
       setInput("");
       setFiles([]);
       pondInstance?.removeFiles();
@@ -68,13 +57,9 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({ sendMessage }) => {
     }
   };
 
-  const handleFileRemove = () => {
-    setFiles([]);
-  };
-
   return (
     <div className="w-full p-4">
-      <div className="flex items-center space-x-3 w-full max-w-full bg-white ">
+      <div className="flex items-center space-x-3 w-full max-w-full bg-white">
         <label
           htmlFor="file-upload"
           className="p-2 rounded-full bg-blue-500 hover:bg-blue-600 cursor-pointer text-white"
@@ -89,7 +74,7 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({ sendMessage }) => {
             ref={(pond) => setPondInstance(pond)}
             allowMultiple={false}
             onupdatefiles={handleFileUpload}
-            onremovefile={handleFileRemove}
+            onremovefile={() => setFiles([])}
             acceptedFileTypes={["image/*", "application/json", "text/csv"]}
             labelIdle='Drag & Drop your file or <span class="filepond--label-action">Browse</span>'
             className="custom-filepond"
